@@ -264,15 +264,39 @@ function SpacebarToggle() {
 
 /**
  * FrameStepKeys — listens for , and . keys to step one frame backward/forward.
- * Assumes 30 fps since HTML5 video does not expose the actual frame rate.
+ * Detects the actual frame duration via requestVideoFrameCallback during playback;
+ * falls back to 30 fps until the real rate is known.
  * Must be rendered inside <Player.Provider>.
  */
-const FRAME_DURATION = 1 / 30
 const FRAME_STEP_INTERVAL_MS = 150
 
 function FrameStepKeys() {
   const media = Player.useMedia()
   const lastStepAt = useRef(0)
+  const frameDuration = useRef(1 / 30)
+
+  // Measure real frame duration from the video stream as it plays
+  useEffect(() => {
+    if (!media || typeof media.requestVideoFrameCallback !== 'function') return
+
+    let handle
+    let prevMediaTime = null
+
+    const onFrame = (_, metadata) => {
+      if (prevMediaTime !== null) {
+        const delta = metadata.mediaTime - prevMediaTime
+        // Sanity-check: accept 8–240 fps
+        if (delta > 1 / 240 && delta < 1 / 8) {
+          frameDuration.current = delta
+        }
+      }
+      prevMediaTime = metadata.mediaTime
+      handle = media.requestVideoFrameCallback(onFrame)
+    }
+
+    handle = media.requestVideoFrameCallback(onFrame)
+    return () => media.cancelVideoFrameCallback(handle)
+  }, [media])
 
   useEffect(() => {
     if (!media) return
@@ -289,7 +313,7 @@ function FrameStepKeys() {
       e.preventDefault()
       media.pause()
       media.currentTime = Math.min(
-        Math.max(media.currentTime + (e.key === '.' ? FRAME_DURATION : -FRAME_DURATION), 0),
+        Math.max(media.currentTime + (e.key === '.' ? frameDuration.current : -frameDuration.current), 0),
         media.duration || 0,
       )
       // Force the browser to decode and paint the new frame even if play()
