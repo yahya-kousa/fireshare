@@ -333,6 +333,7 @@ const UploadCard = React.forwardRef(function UploadCard(
     }
     if (newValue._source === 'db') {
       setSelectedGame(newValue)
+      setUploadToGameFolder(true)
       return
     }
     // New game from SteamGridDB — create it in the DB
@@ -350,6 +351,7 @@ const UploadCard = React.forwardRef(function UploadCard(
       const created = (await GameService.createGame(gameData)).data
       setAllGames((prev) => [...prev, created])
       setSelectedGame({ ...created, _source: 'db' })
+      setUploadToGameFolder(true)
     } catch {
       setSelectedGame(null)
     }

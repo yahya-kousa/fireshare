@@ -139,10 +139,12 @@ const ImageUploadCard = React.forwardRef(function ImageUploadCard(
   const handleGameChange = async (_, newValue) => {
     if (!newValue) {
       setSelectedGame(null)
+      setUploadToGameFolder(false)
       return
     }
     if (newValue._source === 'db') {
       setSelectedGame(newValue)
+      setUploadToGameFolder(true)
       return
     }
     setGameCreating(true)
@@ -159,6 +161,7 @@ const ImageUploadCard = React.forwardRef(function ImageUploadCard(
       const created = (await GameService.createGame(gameData)).data
       setAllGames((prev) => [...prev, created])
       setSelectedGame({ ...created, _source: 'db' })
+      setUploadToGameFolder(true)
     } catch {
       setSelectedGame(null)
     }

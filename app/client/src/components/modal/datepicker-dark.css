@@ -67,24 +67,51 @@
   color: #FFFFFF33;
 }
 
-/* Nav buttons */
+/* Nav buttons — hidden in dropdown caption mode */
 .fireshare-rdp .rdp-nav {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  display: flex;
-  gap: 4px;
+  display: none;
 }
 
-.fireshare-rdp .rdp-button_previous,
-.fireshare-rdp .rdp-button_next {
+/* Year / month dropdown caption */
+.fireshare-rdp .rdp-dropdowns {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.fireshare-rdp .rdp-dropdown_root {
+  position: relative;
+}
+
+.fireshare-rdp .rdp-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
   background: #FFFFFF0D;
+  border: 1px solid #FFFFFF26;
   border-radius: 6px;
   color: white;
-  border: 1px solid #FFFFFF1A;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 4px 28px 4px 10px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
 }
 
-.fireshare-rdp .rdp-button_previous:hover,
-.fireshare-rdp .rdp-button_next:hover {
-  background: #FFFFFF1F;
+.fireshare-rdp .rdp-dropdown:hover {
+  background-color: #FFFFFF1A;
+  border-color: #FFFFFF55;
+}
+
+.fireshare-rdp .rdp-dropdown:focus {
+  outline: none;
+  border-color: #3399FF;
+  box-shadow: 0 0 0 2px #3399FF33;
+}
+
+.fireshare-rdp .rdp-dropdown option {
+  background: #0d1f33;
+  color: white;
 }

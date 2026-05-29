@@ -97,6 +97,9 @@ const DateField = ({ selectedDate, selectedTime, onDateChange, onTimeChange }) =
             selected={selectedDate}
             onSelect={(d) => onDateChange(d || null)}
             defaultMonth={selectedDate || new Date()}
+            captionLayout="dropdown"
+            startMonth={new Date(1970, 0)}
+            endMonth={new Date(new Date().getFullYear() + 1, 11)}
           />
           <Box sx={{ px: 1, pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography sx={{ color: '#FFFFFFB3', fontSize: 13 }}>Time</Typography>

@@ -253,7 +253,7 @@ def scan_videos(root):
                     logger.debug(f"Updating Video {video_id}, available=True")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "available": True })
                 if not existing.created_at:
-                    created_at = datetime.fromtimestamp(os.path.getctime(f"{videos_path}/{path}"))
+                    created_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                     logger.debug(f"Updating Video {video_id}, created_at={created_at}")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "created_at": created_at })
                 if not existing.updated_at:
@@ -261,7 +261,7 @@ def scan_videos(root):
                     logger.debug(f"Updating Video {video_id}, updated_at={updated_at}")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "updated_at": updated_at })
             else:
-                created_at = datetime.fromtimestamp(os.path.getctime(f"{videos_path}/{path}"))
+                created_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                 updated_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                 recorded_at = util.extract_date_from_file(vf)
                 v = Video(video_id=video_id, extension=vf.suffix, path=path, available=True, created_at=created_at, updated_at=updated_at, recorded_at=recorded_at)
@@ -423,7 +423,7 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                     logger.debug(f"Updating Video {video_id}, available=True")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "available": True })
                 if not existing.created_at:
-                    created_at = datetime.fromtimestamp(os.path.getctime(f"{videos_path}/{path}"))
+                    created_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                     logger.debug(f"Updating Video {video_id}, created_at={created_at}")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "created_at": created_at })
                 if not existing.updated_at:
@@ -431,7 +431,7 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                     logger.debug(f"Updating Video {video_id}, updated_at={updated_at}")
                     db.session.query(Video).filter_by(video_id=existing.video_id).update({ "updated_at": updated_at })
             else:
-                created_at = datetime.fromtimestamp(os.path.getctime(f"{videos_path}/{path}"))
+                created_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                 updated_at = datetime.fromtimestamp(os.path.getmtime(f"{videos_path}/{path}"))
                 recorded_at = util.extract_date_from_file(video_file)
                 v = Video(video_id=video_id, extension=video_file.suffix, path=path, available=True, created_at=created_at, updated_at=updated_at, recorded_at=recorded_at)
@@ -1033,7 +1033,7 @@ def scan_images(root):
                     db.session.commit()
                     logger.debug(f"Regenerated derived data for existing image {iid}")
             else:
-                created_at = datetime.fromtimestamp(os.path.getctime(str(img_file)))
+                created_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
                 updated_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
                 source_folder = rel_path.split('/')[0] if '/' in rel_path else None
                 img = Image(image_id=iid, extension=img_file.suffix, path=rel_path,
@@ -1182,7 +1182,7 @@ def scan_image(ctx, path, game_id, tag_ids, title):
             else:
                 logger.debug(f"Image {iid} already indexed")
         else:
-            created_at = datetime.fromtimestamp(os.path.getctime(str(img_file)))
+            created_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
             updated_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
             source_folder = rel_path.split('/')[0] if '/' in rel_path else None
             img = Image(image_id=iid, extension=img_file.suffix, path=rel_path,

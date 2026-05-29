@@ -1438,12 +1438,11 @@ def extract_date_from_file(file_path: Path):
         logger.debug(f"Using filename date for {file_path.name}: {filename_date}")
         return filename_date
     
-    # 3. Fall back to file creation time
+    # 3. Fall back to file modification time (mtime is stable; ctime changes on move/chmod)
     try:
-        # Use ctime on Unix (inode change time, often creation) or creation time on Windows
-        created_timestamp = os.path.getctime(file_path)
+        created_timestamp = os.path.getmtime(file_path)
         created_date = datetime.fromtimestamp(created_timestamp)
-        logger.debug(f"Using file creation date for {file_path.name}: {created_date}")
+        logger.debug(f"Using file mtime for {file_path.name}: {created_date}")
         return created_date
     except Exception as ex:
         logger.warning(f"Failed to get file creation time for {file_path}: {ex}")

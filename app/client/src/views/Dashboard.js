@@ -211,6 +211,11 @@ const Dashboard = ({
         return (b.view_count || 0) - (a.view_count || 0)
       } else if (dateSortOrder.value === 'least_views') {
         return (a.view_count || 0) - (b.view_count || 0)
+      } else if (dateSortOrder.value === 'name_asc' || dateSortOrder.value === 'name_desc') {
+        const nameA = (a.info?.title || '').toLowerCase()
+        const nameB = (b.info?.title || '').toLowerCase()
+        const cmp = nameA.localeCompare(nameB)
+        return dateSortOrder.value === 'name_asc' ? cmp : -cmp
       } else {
         const dateA = a.recorded_at ? new Date(a.recorded_at) : new Date(0)
         const dateB = b.recorded_at ? new Date(b.recorded_at) : new Date(0)

@@ -175,6 +175,11 @@ const ImageFeed = ({ authenticated, searchText, cardSize, selectedImageFolder, o
         return (b.view_count || 0) - (a.view_count || 0)
       } else if (sortOrder.value === 'least_views') {
         return (a.view_count || 0) - (b.view_count || 0)
+      } else if (sortOrder.value === 'name_asc' || sortOrder.value === 'name_desc') {
+        const nameA = (a.info?.title || '').toLowerCase()
+        const nameB = (b.info?.title || '').toLowerCase()
+        const cmp = nameA.localeCompare(nameB)
+        return sortOrder.value === 'name_asc' ? cmp : -cmp
       } else {
         const dateA = a.created_at ? new Date(a.created_at) : new Date(0)
         const dateB = b.created_at ? new Date(b.created_at) : new Date(0)

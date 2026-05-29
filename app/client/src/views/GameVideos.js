@@ -248,6 +248,10 @@ const GameVideos = ({ cardSize, authenticated, searchText }) => {
     return [...filteredVideos].sort((a, b) => {
       if (sortOrder.value === 'most_views') return (b.view_count || 0) - (a.view_count || 0)
       if (sortOrder.value === 'least_views') return (a.view_count || 0) - (b.view_count || 0)
+      if (sortOrder.value === 'name_asc' || sortOrder.value === 'name_desc') {
+        const cmp = (a.info?.title || '').toLowerCase().localeCompare((b.info?.title || '').toLowerCase())
+        return sortOrder.value === 'name_asc' ? cmp : -cmp
+      }
       const dateA = a.recorded_at ? new Date(a.recorded_at) : new Date(0)
       const dateB = b.recorded_at ? new Date(b.recorded_at) : new Date(0)
       return sortOrder.value === 'newest' ? dateB - dateA : dateA - dateB
@@ -273,6 +277,10 @@ const GameVideos = ({ cardSize, authenticated, searchText }) => {
     return tagged.sort((a, b) => {
       if (sortOrder.value === 'most_views') return b.views - a.views
       if (sortOrder.value === 'least_views') return a.views - b.views
+      if (sortOrder.value === 'name_asc' || sortOrder.value === 'name_desc') {
+        const cmp = (a.item.info?.title || '').toLowerCase().localeCompare((b.item.info?.title || '').toLowerCase())
+        return sortOrder.value === 'name_asc' ? cmp : -cmp
+      }
       return sortOrder.value === 'newest' ? b.date - a.date : a.date - b.date
     })
   }, [sortedVideos, filteredImages, sortOrder])

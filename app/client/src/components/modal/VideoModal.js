@@ -154,6 +154,9 @@ const DateField = ({ selectedDate, selectedTime, onDateChange, onTimeChange }) =
             selected={selectedDate}
             onSelect={(d) => onDateChange(d || null)}
             defaultMonth={selectedDate || new Date()}
+            captionLayout="dropdown"
+            startMonth={new Date(1970, 0)}
+            endMonth={new Date(new Date().getFullYear() + 1, 11)}
           />
           <Box sx={{ px: 1, pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography sx={{ color: '#FFFFFFB3', fontSize: 13 }}>Time</Typography>
@@ -511,7 +514,10 @@ const VideoModal = ({
     const cropCleared = cropChanged && cropStart === null && cropEnd === null
 
     if (cropChanged) {
-      setVideo((prev) => ({ ...prev, info: { ...prev.info, start_time: cropStart, end_time: cropEnd, has_crop: false } }))
+      setVideo((prev) => ({
+        ...prev,
+        info: { ...prev.info, start_time: cropStart, end_time: cropEnd, has_crop: false },
+      }))
     }
     if (cropApplied) {
       setCropProcessing(true)
@@ -776,12 +782,7 @@ const VideoModal = ({
                 >
                   <VideoJSPlayer
                     key={`${vid.video_id}-${playerVersion}`}
-                    sources={getVideoSources(
-                      vid.video_id,
-                      vid?.info,
-                      vid.extension,
-                      { forceOriginal: editMode },
-                    )}
+                    sources={getVideoSources(vid.video_id, vid?.info, vid.extension, { forceOriginal: editMode })}
                     poster={getPosterUrl()}
                     autoplay={autoplay}
                     controls={true}
