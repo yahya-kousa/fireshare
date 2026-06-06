@@ -1033,7 +1033,7 @@ def scan_images(root):
                     db.session.commit()
                     logger.debug(f"Regenerated derived data for existing image {iid}")
             else:
-                created_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
+                created_at = util.extract_date_from_image_file(img_file)
                 updated_at = datetime.fromtimestamp(os.path.getmtime(str(img_file)))
                 source_folder = rel_path.split('/')[0] if '/' in rel_path else None
                 img = Image(image_id=iid, extension=img_file.suffix, path=rel_path,
