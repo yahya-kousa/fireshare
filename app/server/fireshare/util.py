@@ -430,11 +430,21 @@ def create_audio_extract(source_path, out_path):
 
 def create_poster(video_path, out_path, second=0):
     s = time.time()
-    cmd = ['ffmpeg', '-v', 'quiet', '-y', '-i', str(video_path), '-ss', str(second), '-vframes', '1', '-vf', 'scale=iw:ih:force_original_aspect_ratio=decrease', str(out_path)]
+    # -ss before -i uses fast keyframe seek, reliable even for large high-bitrate files
+    cmd = ['ffmpeg', '-v', 'quiet', '-y', '-ss', str(second), '-i', str(video_path), '-vframes', '1', '-vf', 'scale=iw:ih:force_original_aspect_ratio=decrease', str(out_path)]
     logger.debug(f"$ {' '.join(cmd)}")
-    sp.call(cmd)
+    ret = sp.call(cmd)
     e = time.time()
-    logger.debug(f'Generated poster {str(out_path)} in {e-s}s')
+    out_path = Path(out_path)
+    success = ret == 0 and out_path.exists() and out_path.stat().st_size > 0
+    if not success and second != 0:
+        # Fall back to first frame if the seek position failed
+        logger.warning(f"Poster generation failed at {second}s (exit {ret}), retrying with first frame")
+        cmd[3] = '0'
+        ret = sp.call(cmd)
+        success = ret == 0 and out_path.exists() and out_path.stat().st_size > 0
+    logger.debug(f'Generated poster {str(out_path)} in {e-s}s (success={success})')
+    return success
 
 
 # ---------------------------------------------------------------------------

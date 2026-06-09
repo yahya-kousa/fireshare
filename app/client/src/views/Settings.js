@@ -29,6 +29,7 @@ import RssFeedIcon from '@mui/icons-material/RssFeed'
 import SendIcon from '@mui/icons-material/Send'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import UpdateIcon from '@mui/icons-material/Update'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import FolderIcon from '@mui/icons-material/Folder'
 import ImageIcon from '@mui/icons-material/Image'
@@ -333,6 +334,23 @@ const Settings = () => {
         open: true,
         type: 'error',
         message: err.response?.data?.error || 'Failed to scan videos for dates',
+      })
+    }
+  }
+
+  const handleRescanDates = async () => {
+    try {
+      const response = await VideoService.rescanDates()
+      setAlert({
+        open: true,
+        type: 'success',
+        message: 'Date rescan started. This may take a few minutes depending on library size.',
+      })
+    } catch (err) {
+      setAlert({
+        open: true,
+        type: 'error',
+        message: err.response?.data?.error || 'Failed to rescan dates',
       })
     }
   }
@@ -1465,6 +1483,15 @@ const Settings = () => {
                     sx={{ width: '100%', maxWidth: 400 }}
                   >
                     Scan for Missing Dates
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<UpdateIcon />}
+                    onClick={handleRescanDates}
+                    size="large"
+                    sx={{ width: '100%', maxWidth: 400 }}
+                  >
+                    Rescan Image / Video Dates
                   </Button>
                 </Stack>
               )}

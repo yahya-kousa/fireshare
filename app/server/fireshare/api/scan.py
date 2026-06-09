@@ -135,6 +135,48 @@ def manual_scan_dates():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@api.route('/api/manual/rescan-dates')
+@login_required
+@demo_restrict
+def manual_rescan_dates():
+    """Re-extract and overwrite recorded_at for all videos and created_at for all images."""
+    app = current_app._get_current_object()
+
+    def run_rescan():
+        with app.app_context():
+            try:
+                paths = app.config['PATHS']
+                videos_path = paths["video"]
+                images_path = paths.get("images")
+
+                videos = Video.query.all()
+                video_dates_updated = 0
+                for video in videos:
+                    recorded_at = util.extract_date_from_file(videos_path / video.path)
+                    if recorded_at:
+                        video.recorded_at = recorded_at
+                        video_dates_updated += 1
+
+                images = Image.query.all() if images_path else []
+                image_dates_updated = 0
+                for image in images:
+                    created_at = util.extract_date_from_image_file(images_path / image.path)
+                    if created_at:
+                        image.created_at = created_at
+                        image_dates_updated += 1
+
+                db.session.commit()
+                logger.info(f"Rescan dates complete: {video_dates_updated}/{len(videos)} videos, {image_dates_updated}/{len(images)} images updated")
+            except Exception as e:
+                logger.error(f"Error rescanning dates: {e}")
+
+    thread = threading.Thread(target=run_rescan)
+    thread.daemon = True
+    thread.start()
+
+    return jsonify({'success': True, 'message': 'Date rescan started in background'}), 200
+
+
 @api.route('/api/scan-games/status')
 @login_required
 def get_game_scan_status():
