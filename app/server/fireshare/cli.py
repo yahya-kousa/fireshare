@@ -291,22 +291,58 @@ def scan_videos(root):
             info = VideoInfo(video_id=nv.video_id, title=Path(nv.path).stem, private=video_config["private"])
             db.session.add(info)
         db.session.commit()
-        if discord_webhook_url:
-            for nv in new_videos:
-                logger.info(f"Posting to Discord webhook")
-                video_url = get_public_watch_url(nv.video_id, config, domain)
+
+        # Generate metadata and posters for new videos, then fire webhooks
+        thumbnail_skip = current_app.config['THUMBNAIL_VIDEO_LOCATION'] or 0
+        if thumbnail_skip > 0 and thumbnail_skip <= 100:
+            thumbnail_skip = thumbnail_skip / 100
+        else:
+            thumbnail_skip = 0
+        processed_root = Path(current_app.config['PROCESSED_DIRECTORY'])
+        for nv in new_videos:
+            video_link_path = video_links / (nv.video_id + nv.extension)
+            if not video_link_path.exists():
+                continue
+            nv_info = VideoInfo.query.filter_by(video_id=nv.video_id).first()
+            if nv_info and not nv_info.duration:
+                media_info = util.get_media_info(video_link_path)
+                if media_info:
+                    video_codecs = [s for s in media_info if s.get('codec_type') == 'video']
+                    if video_codecs:
+                        vc = video_codecs[0]
+                        nv_info.width = int(vc.get('width', 0)) or None
+                        nv_info.height = int(vc.get('height', 0)) or None
+                        duration = 0
+                        if 'duration' in vc:
+                            duration = float(vc['duration'])
+                        elif 'tags' in vc and 'DURATION' in vc['tags']:
+                            duration = util.dur_string_to_seconds(vc['tags']['DURATION'])
+                        nv_info.duration = duration or None
+                        db.session.commit()
+            derived_path = processed_root / "derived" / nv.video_id
+            poster_path = derived_path / "poster.jpg"
+            if not poster_path.exists():
+                if not derived_path.exists():
+                    derived_path.mkdir(parents=True)
+                duration = nv_info.duration if nv_info else 0
+                poster_time = int((duration or 0) * thumbnail_skip)
+                util.create_poster(video_link_path, poster_path, poster_time)
+            poster_ready = poster_path.exists() and poster_path.stat().st_size > 0
+            if not poster_ready:
+                logger.warning(f"Skipping webhook for {nv.video_id}: poster not ready")
+                continue
+            video_url = get_public_watch_url(nv.video_id, config, domain)
+            if discord_webhook_url:
+                logger.info(f"Posting to Discord webhook for {nv.video_id}")
                 send_discord_webhook(webhook_url=discord_webhook_url, video_url=video_url)
-        if generic_webhook_url:
-            for nv in new_videos:
-                logger.info(f"Posting to Generic webhook")
-                video_url = get_public_watch_url(nv.video_id, config, domain)
+            if generic_webhook_url:
+                logger.info(f"Posting to Generic webhook for {nv.video_id}")
                 payload_str = json.dumps(generic_webhook_payload)
-                #Replaces plain text json [[video_url]] with the real video_url python var
                 processed_payload_str = payload_str.replace("[[video_url]]", video_url)
                 final_payload = json.loads(processed_payload_str)
                 send_generic_webhook(
-                    webhook_url=generic_webhook_url, 
-                    video_url=video_url, 
+                    webhook_url=generic_webhook_url,
+                    video_url=video_url,
                     custom_payload=final_payload
                 )
 
@@ -508,7 +544,9 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                         if not derived_path.exists():
                             derived_path.mkdir(parents=True)
                         poster_time = int((info.duration or 0) * thumbnail_skip)
-                        util.create_poster(video_path, derived_path / "poster.jpg", poster_time)
+                        poster_ok = util.create_poster(video_path, derived_path / "poster.jpg", poster_time)
+                        if not poster_ok:
+                            logger.warning(f"Could not generate poster for video {info.video_id}")
                     else:
                         logger.debug(f"Skipping creation of poster for video {info.video_id} because it exists at {str(poster_path)}")
                     db.session.commit()
@@ -518,12 +556,15 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                         if not boomerang_path.exists():
                             util.create_boomerang_preview(video_path, boomerang_path)
 
-                    if discord_webhook_url:
+                    poster_ready = poster_path.exists() and poster_path.stat().st_size > 0
+                    if discord_webhook_url and poster_ready:
                         logger.info(f"Posting to Discord webhook")
                         video_url = get_public_watch_url(video_id, config, domain)
                         send_discord_webhook(webhook_url=discord_webhook_url, video_url=video_url)
-                    
-                    if generic_webhook_url:
+                    elif discord_webhook_url and not poster_ready:
+                        logger.warning(f"Skipping Discord webhook for {video_id}: poster not ready")
+
+                    if generic_webhook_url and poster_ready:
                         logger.info(f"Posting to Generic webhook")
                         video_url = get_public_watch_url(video_id, config, domain)
                         payload_str = json.dumps(generic_webhook_payload)
@@ -531,8 +572,8 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                         processed_payload_str = payload_str.replace("[[video_url]]", video_url)
                         final_payload = json.loads(processed_payload_str)
                         send_generic_webhook(
-                            webhook_url=generic_webhook_url, 
-                            video_url=video_url, 
+                            webhook_url=generic_webhook_url,
+                            video_url=video_url,
                             custom_payload=final_payload
                         )
 
