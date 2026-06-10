@@ -27,6 +27,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
 import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import FolderCopyIcon from '@mui/icons-material/FolderCopy'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 
 import { useMediaQuery, useTheme } from '@mui/material'
@@ -62,6 +63,7 @@ const allPages = [
   { title: 'Images', icon: <PhotoLibraryIcon />, href: '/images', private: false },
   { title: 'Games', icon: <SportsEsportsIcon />, href: '/games', private: false },
   { title: 'Tags', icon: <LocalOfferIcon />, href: '/tags', private: false },
+  { title: 'Folders', icon: <FolderCopyIcon />, href: '/folders', private: false },
   { title: 'File Manager', icon: <FolderOpenIcon />, href: '/files', private: true },
   { title: 'Settings', icon: <SettingsIcon />, href: '/settings', private: true },
 ]
@@ -695,10 +697,20 @@ const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || 
                   </IconButton>
                 )}
 
-                {/* Desktop: left spacer + centered search */}
-                {!isMobile && <Box sx={{ flex: 1 }} />}
+                {/* Mobile: left content (when search not open) */}
+                {isMobile && !mobileSearchOpen && (
+                  <Box
+                    sx={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0, overflow: 'hidden' }}
+                    id="navbar-toolbar-left-mobile"
+                  />
+                )}
+
+                {/* Desktop: left content + centered search */}
+                {!isMobile && (
+                  <Box sx={{ flex: '1 0 auto', display: 'flex', alignItems: 'center' }} id="navbar-toolbar-left" />
+                )}
                 {searchable && !isMobile && (
-                  <Box id="navbar-search-container" sx={{ width: 520, flexShrink: 1, minWidth: 0, mr: 1, ml: 2 }}>
+                  <Box id="navbar-search-container" sx={{ width: 520, flexShrink: 3, minWidth: 0, mr: 1, ml: 2 }}>
                     <Search placeholder={searchPlaceholder} searchHandler={(value) => setSearchText(value)} />
                   </Box>
                 )}
@@ -706,7 +718,7 @@ const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || 
                 {/* Right controls — always in DOM so portal target stays valid */}
                 <Box
                   sx={{
-                    flex: 1,
+                    flex: isMobile ? '0 0 auto' : '1 0 auto',
                     display: isMobile && mobileSearchOpen ? 'none' : 'flex',
                     justifyContent: 'flex-end',
                     alignItems: 'center',

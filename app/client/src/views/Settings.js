@@ -32,6 +32,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import UpdateIcon from '@mui/icons-material/Update'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import FolderIcon from '@mui/icons-material/Folder'
+import FolderCopyIcon from '@mui/icons-material/FolderCopy'
 import ImageIcon from '@mui/icons-material/Image'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -351,6 +352,23 @@ const Settings = () => {
         open: true,
         type: 'error',
         message: err.response?.data?.error || 'Failed to rescan dates',
+      })
+    }
+  }
+
+  const handleScanFolders = async () => {
+    try {
+      const response = await VideoService.scanFolders()
+      setAlert({
+        open: true,
+        type: 'success',
+        message: `Folder scan complete! ${response.data.reassigned} item(s) reassigned, ${response.data.folders_removed} empty folder(s) removed.`,
+      })
+    } catch (err) {
+      setAlert({
+        open: true,
+        type: 'error',
+        message: err.response?.data?.error || 'Failed to scan folders',
       })
     }
   }
@@ -1196,7 +1214,7 @@ const Settings = () => {
                       </Box>
                       {folderRules.length === 0 ? (
                         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                          No folders found.
+                          No shared folders found.
                         </Typography>
                       ) : (
                         <Box sx={{ maxHeight: 800, overflowY: 'auto', pr: 1 }}>
@@ -1323,7 +1341,7 @@ const Settings = () => {
                       </Box>
                       {imageFolderRules.length === 0 ? (
                         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                          No folders found.
+                          No shared folders found.
                         </Typography>
                       ) : (
                         <Box sx={{ maxHeight: 800, overflowY: 'auto', pr: 1 }}>
@@ -1492,6 +1510,15 @@ const Settings = () => {
                     sx={{ width: '100%', maxWidth: 400 }}
                   >
                     Rescan Image / Video Dates
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<FolderCopyIcon />}
+                    onClick={handleScanFolders}
+                    size="large"
+                    sx={{ width: '100%', maxWidth: 400 }}
+                  >
+                    Scan Folders
                   </Button>
                 </Stack>
               )}
