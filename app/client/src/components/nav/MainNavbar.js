@@ -39,7 +39,6 @@ import Search from './Search'
 import LightTooltip from '../ui/LightTooltip'
 import SnackbarAlert from '../alert/SnackbarAlert'
 import { getSetting, setSetting } from '../../common/utils'
-import SliderWrapper from '../ui/SliderWrapper'
 import GameScanStatus from './GameScanStatus'
 import TranscodingStatus from './TranscodingStatus'
 import FolderSuggestionInline from './FolderSuggestionInline'
@@ -54,7 +53,6 @@ import ReleaseNotesDialog from '../modal/ReleaseNotesDialog'
 
 const drawerWidth = 240
 const minimizedDrawerWidth = 57
-const CARD_SIZE_DEFAULT = 375
 const CARD_SIZE_MULTIPLIER = 2
 const DEMO_BANNER_HEIGHT = 34
 
@@ -162,7 +160,6 @@ function MainNavbar({
   const [mobileSearchKey, setMobileSearchKey] = React.useState(0)
   const [searchText, setSearchText] = React.useState()
   const [open, setOpen] = React.useState(!collapsed)
-  const [cardSize, setCardSize] = React.useState(getSetting('cardSize') || CARD_SIZE_DEFAULT)
 
   const [featureAlertOpen, setFeatureAlertOpen] = React.useState(false)
 
@@ -238,7 +235,7 @@ function MainNavbar({
     setImageFolders(folderList)
   }, [])
 
-const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || {})
+  const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || {})
 
   React.useEffect(() => {
     const handleUiConfigUpdate = () => setUiConfig(getSetting('ui_config') || {})
@@ -272,12 +269,6 @@ const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || 
     } catch (err) {
       console.error(err)
     }
-  }
-
-  const handleCardSizeChange = (_e, newValue) => {
-    const newSize = Math.round((newValue / 100) * CARD_SIZE_DEFAULT * CARD_SIZE_MULTIPLIER)
-    setCardSize(newSize)
-    setSetting('cardSize', newSize)
   }
 
   const memoizedHandleAlert = React.useCallback((alert) => {
@@ -476,22 +467,6 @@ const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || 
             return null
           })}
         </List>
-        {cardSlider && open && !isMobile ? (
-          <>
-            <Divider />
-            <Box sx={{ display: 'flex', p: 2 }} justifyContent="center">
-              <SliderWrapper
-                width={open ? 150 : 10}
-                h
-                cardSize={cardSize}
-                defaultCardSize={CARD_SIZE_DEFAULT}
-                cardSizeMultiplier={CARD_SIZE_MULTIPLIER}
-                onChangeCommitted={handleCardSizeChange}
-                vertical={!open}
-              />
-            </Box>
-          </>
-        ) : null}
         <Divider />
         <UploadCard
           ref={registerUploadCard}
@@ -816,7 +791,7 @@ const [uiConfig, setUiConfig] = React.useState(() => getSetting('ui_config') || 
           authenticated,
           isAdmin,
           searchText,
-          cardSize,
+          cardSize: 300,
           selectedFolder: effectiveFolder,
           onFolderChange: handleFolderChange,
           onFoldersLoaded: handleFoldersLoaded,
