@@ -322,6 +322,15 @@ const MasonryImageCard = ({
                   {image.game.name}
                 </Typography>
               )}
+              {image.created_at && (
+                <Typography sx={{ fontSize: 12, color: '#FFFFFF80', mt: 0.25 }}>
+                  {new Date(image.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </Typography>
+              )}
             </Box>
           </Box>
           {localTags.length > 0 && (

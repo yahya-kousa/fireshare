@@ -417,7 +417,7 @@ def scan_videos(root):
             if generic_webhook_url:
                 logger.info(f"Posting to Generic webhook for {nv.video_id}")
                 payload_str = json.dumps(generic_webhook_payload)
-                processed_payload_str = payload_str.replace("[[video_url]]", video_url)
+                processed_payload_str = payload_str.replace("[[video_url]]", video_url or "")
                 final_payload = json.loads(processed_payload_str)
                 send_generic_webhook(
                     webhook_url=generic_webhook_url,
@@ -652,7 +652,7 @@ def scan_video(ctx, path, tag_ids, game_id, title):
                         video_url = get_public_watch_url(video_id, config, domain)
                         payload_str = json.dumps(generic_webhook_payload)
                         #Replaces plain text json [[video_url]] with the real video_url python var
-                        processed_payload_str = payload_str.replace("[[video_url]]", video_url)
+                        processed_payload_str = payload_str.replace("[[video_url]]", video_url or "")
                         final_payload = json.loads(processed_payload_str)
                         send_generic_webhook(
                             webhook_url=generic_webhook_url,

@@ -22,10 +22,15 @@ services:
       # - STEAMGRIDDB_API_KEY=
       # The location in the video thumbnails are generated. A value between 0-100 where 50 would be the frame in the middle of the video file and 0 would be the first frame of the video.
       - THUMBNAIL_VIDEO_LOCATION=0
-      # The domain your instance is hosted at. (do not add http or https) e.x: v.fireshare.net, this is required for opengraph to work correctly for shared links. DO NOT SURROUND IN QUOTES.
+      # The domain your instance is hosted at. (do not add http or https) e.x: demo.fireshare.net, this is required for opengraph to work correctly for shared links. DO NOT SURROUND IN QUOTES.
       - DOMAIN=
       - PUID=1000
       - PGID=1000
+      # The port Fireshare's web server (nginx) listens on inside the container (default: 80).
+      # Most users should leave this alone and change the host-side "ports" mapping above instead.
+      # This is primarily useful when running with network_mode: host, where the "ports" mapping
+      # is ignored and this value becomes the port exposed directly on the host.
+      # - FIRESHARE_PORT=80
       # Enable transcoding to create 720p and 1080p variants (default: false)
       - ENABLE_TRANSCODING=false
       # Enable GPU acceleration for transcoding using NVENC (requires nvidia-docker runtime, default: false)

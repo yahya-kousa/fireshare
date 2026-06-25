@@ -331,6 +331,7 @@ const GameVideos = ({ cardSize, authenticated, searchText }) => {
               ...(update.private !== undefined && { private: update.private }),
             },
             ...(update.game !== undefined && { game: update.game }),
+            ...(update.created_at !== undefined && { created_at: update.created_at }),
           }
         }),
       )
@@ -345,6 +346,7 @@ const GameVideos = ({ cardSize, authenticated, searchText }) => {
               ...(update.private !== undefined && { private: update.private }),
             },
             ...(update.game !== undefined && { game: update.game }),
+            ...(update.created_at !== undefined && { created_at: update.created_at }),
           }
         }),
       )

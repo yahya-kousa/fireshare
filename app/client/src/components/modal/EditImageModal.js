@@ -25,6 +25,7 @@ import { ImageService } from '../../services'
 import { getPublicImageUrl, getImageUrl } from '../../common/utils'
 import { labelSx, inputSx, dialogPaperSx } from '../../common/modalStyles'
 import GameSearch from '../game/GameSearch'
+import DateField from './DateField'
 
 const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onNext, onPrev }) => {
   const theme = useTheme()
@@ -35,9 +36,12 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
   const [imgLoaded, setImgLoaded] = React.useState(false)
   const [showSwipeHint, setShowSwipeHint] = React.useState(false)
   const [panningDisabled, setPanningDisabled] = React.useState(true)
+  const [selectedDate, setSelectedDate] = React.useState(null)
+  const [selectedTime, setSelectedTime] = React.useState('')
   const wasOpenRef = React.useRef(false)
   const saveTimerRef = React.useRef(null)
   const latestTitleRef = React.useRef('')
+  const latestCreatedAtRef = React.useRef(undefined)
   const transformRef = React.useRef(null)
   const prevZoomedRef = React.useRef(false)
 
@@ -54,7 +58,10 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
       setImgLoaded(false)
       setShowSwipeHint(false)
       setPanningDisabled(true)
+      setSelectedDate(null)
+      setSelectedTime('')
       latestTitleRef.current = ''
+      latestCreatedAtRef.current = undefined
       return
     }
     const t =
@@ -67,7 +74,17 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
         : 'Untitled')
     setTitle(t)
     latestTitleRef.current = t
+    latestCreatedAtRef.current = undefined
     setPrivateView(image.info?.private || false)
+    if (image.created_at) {
+      const d = new Date(image.created_at)
+      const pad = (n) => n.toString().padStart(2, '0')
+      setSelectedDate(d)
+      setSelectedTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`)
+    } else {
+      setSelectedDate(null)
+      setSelectedTime('')
+    }
     ImageService.addView(image.image_id).catch(() => {})
     ImageService.getGame(image.image_id)
       .then((res) => setSelectedGame(res.data?.game || null))
@@ -174,7 +191,12 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
       saveTimerRef.current = null
       ImageService.updateDetails(imageId, { title: latestTitleRef.current }).catch(() => {})
     }
-    onClose({ title: latestTitleRef.current, private: privateView, game: selectedGame })
+    onClose({
+      title: latestTitleRef.current,
+      private: privateView,
+      game: selectedGame,
+      ...(latestCreatedAtRef.current !== undefined && { created_at: latestCreatedAtRef.current }),
+    })
   }
 
   const handleGameLinked = async (game, warning) => {
@@ -213,6 +235,42 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
     } catch (err) {
       alertHandler?.({ open: true, type: 'error', message: 'Failed to update privacy.' })
     }
+  }
+
+  // Build a naive local ISO string (no Z/offset) so the server stores the time
+  // exactly as entered, without any timezone conversion.
+  const getCreatedAtISO = (dateVal, timeVal) => {
+    if (!dateVal) return null
+    const d = new Date(dateVal)
+    if (timeVal) {
+      const [h, m] = timeVal.split(':')
+      d.setHours(+h, +m, 0, 0)
+    }
+    const pad = (n) => n.toString().padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
+      d.getMinutes(),
+    )}:00`
+  }
+
+  const persistCreatedAt = async (dateVal, timeVal) => {
+    const iso = getCreatedAtISO(dateVal, timeVal)
+    latestCreatedAtRef.current = iso
+    try {
+      await ImageService.updateDetails(imageId, { created_at: iso })
+      alertHandler?.({ open: true, type: 'success', message: 'Created date updated.' })
+    } catch (err) {
+      alertHandler?.({ open: true, type: 'error', message: 'Failed to save created date.' })
+    }
+  }
+
+  const handleDateChange = (d) => {
+    setSelectedDate(d)
+    persistCreatedAt(d, selectedTime)
+  }
+
+  const handleTimeChange = (t) => {
+    setSelectedTime(t)
+    persistCreatedAt(selectedDate, t)
   }
 
   const handleDownload = () => {
@@ -427,6 +485,19 @@ const EditImageModal = ({ open, onClose, image, alertHandler, authenticated, onN
                 </Typography>
               )}
             </Box>
+
+            {/* Created Date */}
+            {authenticated && (
+              <Box>
+                <Typography sx={labelSx}>Created Date</Typography>
+                <DateField
+                  selectedDate={selectedDate}
+                  selectedTime={selectedTime}
+                  onDateChange={handleDateChange}
+                  onTimeChange={handleTimeChange}
+                />
+              </Box>
+            )}
 
             {/* Privacy */}
             {authenticated && (
