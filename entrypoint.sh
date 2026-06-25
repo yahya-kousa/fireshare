@@ -108,6 +108,10 @@ fi
 
 # ── Nginx ─────────────────────────────────────────────────────────────────────
 section "Nginx"
+FIRESHARE_PORT=${FIRESHARE_PORT:-80}
+log "Configuring nginx to listen on port ${FIRESHARE_PORT}"
+sed "s/__FIRESHARE_PORT__/${FIRESHARE_PORT}/" \
+    /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 log "Starting nginx"
 nginx -g 'daemon on;'
 log "Nginx ready"

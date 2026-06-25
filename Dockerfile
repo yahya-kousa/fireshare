@@ -162,7 +162,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
 RUN mkdir /data && mkdir /processed
 COPY entrypoint.sh /
-COPY app/nginx/prod.conf /etc/nginx/nginx.conf
+COPY app/nginx/prod.conf /etc/nginx/nginx.conf.template
 COPY app/nginx/error.html /etc/nginx/error.html
 COPY app/nginx/api_unavailable.html /etc/nginx/api_unavailable.html
 COPY app/server/ /app/server

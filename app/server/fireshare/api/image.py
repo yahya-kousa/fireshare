@@ -303,6 +303,18 @@ def update_image_details(image_id):
         img.info.description = data['description']
     if 'private' in data:
         img.info.private = bool(data['private'])
+    if 'created_at' in data:
+        created_at = data['created_at']
+        if not created_at:
+            img.created_at = None
+        else:
+            try:
+                # Strip any timezone suffix and store as naive local datetime,
+                # matching how video recorded_at is persisted.
+                dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                img.created_at = dt.replace(tzinfo=None)
+            except (ValueError, AttributeError):
+                pass
     db.session.commit()
     return Response(status=200)
 
