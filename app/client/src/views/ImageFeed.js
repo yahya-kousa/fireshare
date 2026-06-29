@@ -17,6 +17,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CasinoIcon from '@mui/icons-material/Casino'
+import DoneAllIcon from '@mui/icons-material/DoneAll'
+import RemoveDoneIcon from '@mui/icons-material/RemoveDone'
 import Select from 'react-select'
 import ImageCards from '../components/cards/ImageCards'
 import EditImageModal from '../components/modal/EditImageModal'
@@ -301,7 +303,7 @@ const ImageFeed = ({ authenticated, searchText, cardSize, selectedImageFolder, o
       </SnackbarAlert>
       {toolbarTarget &&
         ReactDOM.createPortal(
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'nowrap', minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, flexWrap: 'nowrap', minWidth: 0 }}>
             {!(editMode && isMdDown) && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                 {showFolderDropdown && imageFolderList.length > 1 && (
@@ -353,9 +355,17 @@ const ImageFeed = ({ authenticated, searchText, cardSize, selectedImageFolder, o
             {authenticated && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'nowrap', minWidth: 0 }}>
                 {editMode && (
-                  <Box sx={{ display: 'flex', gap: 1, flexShrink: 1, minWidth: 0 }}>
-                    <OutlinedIconButton onClick={handleSelectAllToggle}>
-                      {allSelected ? 'Select None' : 'Select All'}
+                  <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, flexShrink: 1, minWidth: 0 }}>
+                    <OutlinedIconButton
+                      onClick={handleSelectAllToggle}
+                      icon={
+                        isMdDown ? (
+                          allSelected ? <RemoveDoneIcon sx={{ fontSize: 16 }} /> : <DoneAllIcon sx={{ fontSize: 16 }} />
+                        ) : undefined
+                      }
+                      title={allSelected ? 'Select None' : 'Select All'}
+                    >
+                      {!isMdDown ? (allSelected ? 'Select None' : 'Select All') : null}
                     </OutlinedIconButton>
                     <OutlinedIconButton
                       icon={<DeleteIcon sx={{ fontSize: 16 }} />}
