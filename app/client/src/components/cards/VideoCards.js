@@ -26,9 +26,7 @@ const VideoCards = ({
   const [videoModal, setVideoModal] = React.useState({
     open: false,
   })
-  const [isSingleColumn, setIsSingleColumn] = React.useState(false)
   const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE)
-  const containerRef = React.useRef()
   const sentinelRef = React.useRef()
 
   React.useEffect(() => {
@@ -74,26 +72,6 @@ const VideoCards = ({
   const handleDelete = (id) => {
     setVideos((vs) => vs.filter((v) => v.video_id !== id))
   }
-
-  React.useEffect(() => {
-    if (!vids || vids.length === 0) {
-      setIsSingleColumn(false)
-      return
-    }
-
-    const el = containerRef.current
-    if (!el) return
-
-    const observer = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect?.width || 0
-      if (!width) return
-      const single = width < size * 2 + 24
-      setIsSingleColumn(single)
-    })
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [size, vids])
 
   React.useEffect(() => {
     const sentinel = sentinelRef.current
@@ -191,14 +169,10 @@ const VideoCards = ({
       {vids && vids.length !== 0 && (
         <>
           <Box
-            ref={containerRef}
             sx={{
               display: 'grid',
               width: '100%',
-              justifyContent: 'start',
-              gridTemplateColumns: isSingleColumn
-                ? '1fr'
-                : `repeat(auto-fill, minmax(min(100%, ${size}px), ${size}px))`,
+              gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${size}px), 1fr))`,
               gap: 2,
             }}
           >
