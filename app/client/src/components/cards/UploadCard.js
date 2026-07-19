@@ -106,6 +106,8 @@ const UploadCard = React.forwardRef(function UploadCard(
 
   // Pre-upload metadata dialog
   const [pendingFiles, setPendingFiles] = React.useState([])
+  // Per-file editable display titles, parallel to pendingFiles (batch uploads only)
+  const [pendingTitles, setPendingTitles] = React.useState([])
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [allGames, setAllGames] = React.useState([])
   const [allTags, setAllTags] = React.useState([])
@@ -203,6 +205,7 @@ const UploadCard = React.forwardRef(function UploadCard(
 
   const openMetadataDialog = (files) => {
     setPendingFiles(files)
+    setPendingTitles(files.map((f) => f.name.replace(/\.[^/.]+$/, '')))
     setSelectedGame(null)
     setSelectedTags([])
     setTagInput('')
@@ -279,8 +282,8 @@ const UploadCard = React.forwardRef(function UploadCard(
     const items = pendingFiles.map((file, idx) => ({
       id: `${Date.now()}-${idx}-${file.name}`,
       file,
-      // A custom title only makes sense for a single file — batches keep their filenames
-      metadata: { ...metadata, title: !isBatch ? titleInput.trim() || null : null },
+      // Single file uses the big inline title; batches use the per-file title inputs
+      metadata: { ...metadata, title: (isBatch ? pendingTitles[idx]?.trim() : titleInput.trim()) || null },
       progress: 0,
       rate: null,
       status: 'queued',
@@ -631,39 +634,64 @@ const UploadCard = React.forwardRef(function UploadCard(
     </Box>
   )
 
+  const updatePendingTitle = (idx, value) => {
+    setPendingTitles((prev) => {
+      const next = [...prev]
+      next[idx] = value
+      return next
+    })
+  }
+
   const pendingFilesCaption = isBatchPending ? (
-    <Box
-      sx={{
-        mt: 1,
-        maxHeight: 96,
-        overflowY: 'auto',
-        pr: 0.5,
-        '&::-webkit-scrollbar': { width: 4 },
-        '&::-webkit-scrollbar-track': { background: 'transparent' },
-        '&::-webkit-scrollbar-thumb': {
-          background: 'rgba(194, 224, 255, 0.15)',
-          borderRadius: 2,
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          background: 'rgba(194, 224, 255, 0.3)',
-        },
-      }}
-    >
-      {pendingFiles.map((f, idx) => (
-        <Typography
-          key={`${f.name}-${idx}`}
-          sx={{
-            fontSize: 11,
-            color: '#FFFFFF4D',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            lineHeight: 1.6,
-          }}
-        >
-          {f.name}
-        </Typography>
-      ))}
+    <Box sx={{ mt: 1.25 }}>
+      <Typography sx={{ ...labelSx, mb: 0.75 }}>Titles</Typography>
+      <Box
+        sx={{
+          maxHeight: 150,
+          overflowY: 'auto',
+          pr: 0.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.75,
+          '&::-webkit-scrollbar': { width: 4 },
+          '&::-webkit-scrollbar-track': { background: 'transparent' },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(194, 224, 255, 0.15)',
+            borderRadius: 2,
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'rgba(194, 224, 255, 0.3)',
+          },
+        }}
+      >
+        {pendingFiles.map((f, idx) => (
+          <Box
+            key={`${f.name}-${idx}`}
+            component="input"
+            value={pendingTitles[idx] ?? ''}
+            placeholder={f.name.replace(/\.[^/.]+$/, '')}
+            onChange={(e) => updatePendingTitle(idx, e.target.value)}
+            maxLength={200}
+            title={f.name}
+            sx={{
+              width: '100%',
+              boxSizing: 'border-box',
+              background: '#FFFFFF0D',
+              border: '1px solid #FFFFFF14',
+              borderRadius: '6px',
+              outline: 'none',
+              color: 'white',
+              fontSize: 12.5,
+              lineHeight: 1.4,
+              padding: '5px 8px',
+              fontFamily: 'inherit',
+              transition: 'border-color 0.15s, background 0.15s',
+              '&::placeholder': { color: '#FFFFFF4D' },
+              '&:focus': { borderColor: '#2684FF80', background: '#FFFFFF14' },
+            }}
+          />
+        ))}
+      </Box>
     </Box>
   ) : (
     <Typography
