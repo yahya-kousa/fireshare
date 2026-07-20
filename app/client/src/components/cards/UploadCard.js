@@ -128,7 +128,6 @@ const UploadCard = React.forwardRef(function UploadCard(
   const [previewPlayable, setPreviewPlayable] = React.useState(false)
   const [availableFolders, setAvailableFolders] = React.useState([])
   const [selectedFolder, setSelectedFolder] = React.useState('')
-  const imageThumbnailUrlRef = React.useRef(null)
   const previewUrlRef = React.useRef(null)
 
   const intakeFiles = (files) => {
@@ -292,10 +291,6 @@ const UploadCard = React.forwardRef(function UploadCard(
     setPendingFiles([])
     setUploadQueue((prev) => [...prev, ...items])
     if (isBatch) clearPreviewUrl()
-    if (imageThumbnailUrlRef.current) {
-      URL.revokeObjectURL(imageThumbnailUrlRef.current)
-      imageThumbnailUrlRef.current = null
-    }
   }
 
   const handleDialogCancel = () => {
@@ -311,10 +306,6 @@ const UploadCard = React.forwardRef(function UploadCard(
     setEditingTitle(false)
     setThumbnail(null)
     setThumbnailReady(false)
-    if (imageThumbnailUrlRef.current) {
-      URL.revokeObjectURL(imageThumbnailUrlRef.current)
-      imageThumbnailUrlRef.current = null
-    }
     clearPreviewUrl()
   }
 
@@ -539,7 +530,9 @@ const UploadCard = React.forwardRef(function UploadCard(
   const isUploading = uploadQueue.length > 0
   const totalQueueBytes = uploadQueue.reduce((sum, i) => sum + i.file.size, 0)
   const loadedQueueBytes = uploadQueue.reduce(
-    (sum, i) => sum + (i.status === 'done' || i.status === 'processing' ? i.file.size : i.progress * i.file.size),
+    // Anything past the uploading stage (processing, done, or failed) counts as fully transferred
+    (sum, i) =>
+      sum + (i.status === 'queued' || i.status === 'uploading' ? i.progress * i.file.size : i.file.size),
     0,
   )
   const aggregateProgress = totalQueueBytes > 0 ? Math.min(loadedQueueBytes / totalQueueBytes, 1) : 0
